@@ -5,8 +5,9 @@
 //  Created by Julian Manaois on 10/16/25.
 //
 
-
+import SwiftUI
 import Foundation
+internal import Combine
 
 @MainActor
 class SearchViewModel: ObservableObject {

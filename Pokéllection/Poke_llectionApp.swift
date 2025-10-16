@@ -1,32 +1,33 @@
-//
-//  Poke_llectionApp.swift
-//  Pokéllection
-//
-//  Created by Julian Manaois on 10/16/25.
-//
-
 import SwiftUI
-import SwiftData
+import Foundation
 
 @main
-struct Poke_llectionApp: App {
-    var sharedModelContainer: ModelContainer = {
-        let schema = Schema([
-            Item.self,
-        ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-
-        do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-        } catch {
-            fatalError("Could not create ModelContainer: \(error)")
-        }
-    }()
-
+struct Pokellection: App {
+    @StateObject private var collectionVM = CollectionViewModel()
+    @StateObject private var wishlistVM = WishlistViewModel()
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            TabView {
+                SearchView()
+                    .environmentObject(collectionVM)
+                    .environmentObject(wishlistVM)
+                    .tabItem {
+                        Label("Search", systemImage: "magnifyingglass")
+                    }
+
+                CollectionView()
+                    .environmentObject(collectionVM)
+                    .tabItem {
+                        Label("Collection", systemImage: "rectangle.stack.fill")
+                    }
+
+                WishlistView()
+                    .environmentObject(wishlistVM)
+                    .tabItem {
+                        Label("Wishlist", systemImage: "heart.fill")
+                    }
+            }
         }
-        .modelContainer(sharedModelContainer)
     }
 }

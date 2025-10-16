@@ -1,3 +1,11 @@
+//
+//  WishlistView.swift
+//  Pokéllection
+//
+//  Created by Julian Manaois on 10/16/25.
+//
+
+
 import SwiftUI
 
 struct WishlistView: View {
