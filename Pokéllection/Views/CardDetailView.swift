@@ -1,0 +1,135 @@
+import SwiftUI
+
+struct CardDetailView: View {
+    let card: Card
+    @EnvironmentObject var collectionViewModel: CollectionViewModel
+    @EnvironmentObject var wishlistViewModel: WishlistViewModel
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                // 📝 Card name
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(card.name)
+                        .font(.title)
+                        .bold()
+                    if let setName = card.set_name {
+                        Text("Set: \(setName)")
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding(.horizontal)
+
+                // 💰 Compact price summary
+                if let summary = compactPriceSummary(for: card) {
+                    VStack(spacing: 4) {
+                        Text("Market: \(summary.market)")
+                            .font(.headline)
+                        Text("Low: \(summary.low) · High: \(summary.high)")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                } else {
+                    Text("No pricing data available.")
+                        .foregroundColor(.secondary)
+                        .padding()
+                }
+
+                // 🪙 Detailed variant list
+                if let variants = card.variants, !variants.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Variants")
+                            .font(.headline)
+                        ForEach(variants) { variant in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(variant.condition ?? "Unknown Condition")
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+
+                                HStack(spacing: 8) {
+                                    if let market = variant.market_price {
+                                        Text("Market: \(market.asCurrency())")
+                                    }
+                                    if let low = variant.low_price {
+                                        Text("Low: \(low.asCurrency())")
+                                    }
+                                    if let high = variant.high_price {
+                                        Text("High: \(high.asCurrency())")
+                                    }
+                                }
+                                .font(.footnote)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                    .padding(.horizontal)
+                }
+
+                // 💾 Wishlist / Collection buttons
+                HStack(spacing: 20) {
+                    Button {
+                        if collectionViewModel.contains(card) {
+                            collectionViewModel.removeFromCollection(card)
+                        } else {
+                            collectionViewModel.addToCollection(card)
+                        }
+                    } label: {
+                        Label(
+                            collectionViewModel.contains(card)
+                            ? "Remove from Collection"
+                            : "Add to Collection",
+                            systemImage: collectionViewModel.contains(card)
+                            ? "minus.circle"
+                            : "plus.circle"
+                        )
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        if wishlistViewModel.contains(card) {
+                            wishlistViewModel.removeFromWishlist(card)
+                        } else {
+                            wishlistViewModel.addToWishlist(card)
+                        }
+                    } label: {
+                        Label(
+                            wishlistViewModel.contains(card)
+                            ? "Remove from Wishlist"
+                            : "Add to Wishlist",
+                            systemImage: wishlistViewModel.contains(card)
+                            ? "heart.slash"
+                            : "heart"
+                        )
+                    }
+                    .buttonStyle(.bordered)
+                }
+                .padding(.top)
+            }
+            .padding()
+        }
+        .navigationTitle(card.name)
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // 🧮 Helper: generate compact summary
+    private func compactPriceSummary(for card: Card) -> (market: String, low: String, high: String)? {
+        guard let variants = card.variants, !variants.isEmpty else { return nil }
+        let allMarkets = variants.compactMap { $0.market_price }
+        let allLows = variants.compactMap { $0.low_price }
+        let allHighs = variants.compactMap { $0.high_price }
+
+        guard let market = allMarkets.min(),
+              let low = allLows.min(),
+              let high = allHighs.max() else { return nil }
+
+        return (market.asCurrency(), low.asCurrency(), high.asCurrency())
+    }
+}

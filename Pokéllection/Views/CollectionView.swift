@@ -18,7 +18,11 @@ struct CollectionView: View {
                     Text(card.name)
                 }
                 .onDelete { indexSet in
-                    indexSet.map { collectionVM.collection[$0] }.forEach(collectionVM.remove)
+                    // Delete each selected card properly
+                    indexSet.map { collectionVM.collection[$0] }
+                        .forEach { card in
+                            collectionVM.removeFromCollection(card)
+                        }
                 }
             }
             .navigationTitle("My Collection")

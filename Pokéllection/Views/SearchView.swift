@@ -1,20 +1,10 @@
-//
-//  SearchView.swift
-//  Pokéllection
-//
-//  Created by Julian Manaois on 10/16/25.
-//
-
-
 import SwiftUI
 
 struct SearchView: View {
     @StateObject private var viewModel = SearchViewModel()
-    @EnvironmentObject var collectionVM: CollectionViewModel
-    @EnvironmentObject var wishlistVM: WishlistViewModel
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             VStack {
                 TextField("Search cards...", text: $viewModel.query)
                     .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -22,40 +12,33 @@ struct SearchView: View {
                     .onSubmit {
                         Task { await viewModel.searchCards() }
                     }
-
+                
                 if viewModel.isLoading {
-                    ProgressView("Searching...")
+                    ProgressView("Searching…")
+                        .padding()
                 } else {
                     List(viewModel.results) { card in
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(card.name).font(.headline)
-                                if let url = card.imageURL, let imgURL = URL(string: url) {
-                                    AsyncImage(url: imgURL) { image in
-                                        image.resizable()
-                                             .aspectRatio(contentMode: .fit)
-                                             .frame(height: 100)
-                                    } placeholder: {
-                                        ProgressView()
+                        NavigationLink(destination: CardDetailView(card: card)) {
+                            HStack(alignment: .center, spacing: 16) {
+                               
+
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(card.name)
+                                        .font(.headline)
+                                    if let setName = card.set_name {
+                                        Text(setName)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
                                     }
                                 }
                             }
-                            Spacer()
-                            Menu {
-                                Button("Add to Collection") {
-                                    collectionVM.add(card)
-                                }
-                                Button("Add to Wishlist") {
-                                    wishlistVM.add(card)
-                                }
-                            } label: {
-                                Image(systemName: "plus.circle")
-                            }
+                            .padding(.vertical, 4)
                         }
                     }
+                    .listStyle(.plain)
                 }
             }
-            .navigationTitle("Search")
+            .navigationTitle("Search Cards")
         }
     }
 }

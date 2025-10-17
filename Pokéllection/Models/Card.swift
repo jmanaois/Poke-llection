@@ -8,8 +8,17 @@
 
 import Foundation
 
-struct Card: Identifiable, Codable, Equatable {
+struct Variant: Codable, Identifiable, Hashable {
+    let id: String
+    let condition: String?
+    let market_price: Double?
+    let low_price: Double?
+    let high_price: Double?
+}
+
+struct Card: Codable, Identifiable, Hashable {
     let id: String
     let name: String
-    let imageURL: String?
+    let set_name: String?
+    let variants: [Variant]?
 }

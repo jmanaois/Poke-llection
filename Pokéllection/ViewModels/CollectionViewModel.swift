@@ -7,19 +7,23 @@
 
 import SwiftUI
 import Foundation
-internal import Combine
+import Combine
 
 @MainActor
 class CollectionViewModel: ObservableObject {
     @Published var collection: [Card] = []
-    
-    func add(_ card: Card) {
-        if !collection.contains(card) {
+
+    func addToCollection(_ card: Card) {
+        if !collection.contains(where: { $0.id == card.id }) {
             collection.append(card)
         }
     }
-    
-    func remove(_ card: Card) {
-        collection.removeAll { $0 == card }
+
+    func removeFromCollection(_ card: Card) {
+        collection.removeAll(where: { $0.id == card.id })
+    }
+
+    func contains(_ card: Card) -> Bool {
+        collection.contains(where: { $0.id == card.id })
     }
 }

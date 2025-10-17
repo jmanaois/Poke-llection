@@ -7,19 +7,24 @@
 
 import SwiftUI
 import Foundation
-internal import Combine
+import Combine
 
 @MainActor
+
 class WishlistViewModel: ObservableObject {
     @Published var wishlist: [Card] = []
-    
-    func add(_ card: Card) {
-        if !wishlist.contains(card) {
+
+    func addToWishlist(_ card: Card) {
+        if !wishlist.contains(where: { $0.id == card.id }) {
             wishlist.append(card)
         }
     }
-    
-    func remove(_ card: Card) {
-        wishlist.removeAll { $0 == card }
+
+    func removeFromWishlist(_ card: Card) {
+        wishlist.removeAll(where: { $0.id == card.id })
+    }
+
+    func contains(_ card: Card) -> Bool {
+        wishlist.contains(where: { $0.id == card.id })
     }
 }

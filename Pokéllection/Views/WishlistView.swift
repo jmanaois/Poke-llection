@@ -5,7 +5,6 @@
 //  Created by Julian Manaois on 10/16/25.
 //
 
-
 import SwiftUI
 
 struct WishlistView: View {
@@ -18,10 +17,15 @@ struct WishlistView: View {
                     Text(card.name)
                 }
                 .onDelete { indexSet in
-                    indexSet.map { wishlistVM.wishlist[$0] }.forEach(wishlistVM.remove)
+                    // Delete each selected card properly
+                    indexSet.map { wishlistVM.wishlist[$0] }
+                        .forEach { card in
+                            wishlistVM.removeFromWishlist(card)
+                        }
                 }
             }
             .navigationTitle("Wishlist")
         }
     }
 }
+
