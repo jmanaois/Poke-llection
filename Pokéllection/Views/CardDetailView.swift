@@ -74,44 +74,12 @@ struct CardDetailView: View {
                 }
 
                 // 💾 Wishlist / Collection buttons
-                HStack(spacing: 20) {
-                    Button {
-                        if collectionViewModel.contains(card) {
-                            collectionViewModel.removeFromCollection(card)
-                        } else {
-                            collectionViewModel.addToCollection(card)
-                        }
-                    } label: {
-                        Label(
-                            collectionViewModel.contains(card)
-                            ? "Remove from Collection"
-                            : "Add to Collection",
-                            systemImage: collectionViewModel.contains(card)
-                            ? "minus.circle"
-                            : "plus.circle"
-                        )
-                    }
-                    .buttonStyle(.borderedProminent)
-
-                    Button {
-                        if wishlistViewModel.contains(card) {
-                            wishlistViewModel.removeFromWishlist(card)
-                        } else {
-                            wishlistViewModel.addToWishlist(card)
-                        }
-                    } label: {
-                        Label(
-                            wishlistViewModel.contains(card)
-                            ? "Remove from Wishlist"
-                            : "Add to Wishlist",
-                            systemImage: wishlistViewModel.contains(card)
-                            ? "heart.slash"
-                            : "heart"
-                        )
-                    }
-                    .buttonStyle(.bordered)
+                VStack(spacing: 12) {
+                    collectionButton
+                    wishlistButton
                 }
                 .padding(.top)
+                .padding(.horizontal)
             }
             .padding()
         }
@@ -119,7 +87,64 @@ struct CardDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    // 🧮 Helper: generate compact summary
+    // MARK: - Adaptive Buttons
+
+    private var collectionButton: some View {
+        let isInCollection = collectionViewModel.contains(card)
+
+        return Button {
+            withAnimation(.spring()) {
+                if isInCollection {
+                    collectionViewModel.removeFromCollection(card)
+                } else {
+                    collectionViewModel.addToCollection(card)
+                }
+            }
+        } label: {
+            Label(
+                isInCollection ? "In Collection" : "Add to Collection",
+                systemImage: isInCollection ? "checkmark.circle.fill" : "plus.circle"
+            )
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(isInCollection ? Color.green.opacity(0.15) : Color.blue)
+            .foregroundColor(isInCollection ? .green : .white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+            .animation(.spring(), value: isInCollection)
+        }
+    }
+
+    private var wishlistButton: some View {
+        let isInWishlist = wishlistViewModel.contains(card)
+
+        return Button {
+            withAnimation(.spring()) {
+                if isInWishlist {
+                    wishlistViewModel.removeFromWishlist(card)
+                } else {
+                    wishlistViewModel.addToWishlist(card)
+                }
+            }
+        } label: {
+            Label(
+                isInWishlist ? "In Wishlist" : "Add to Wishlist",
+                systemImage: isInWishlist ? "heart.fill" : "heart"
+            )
+            .font(.headline)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(isInWishlist ? Color.pink.opacity(0.15) : Color.pink)
+            .foregroundColor(isInWishlist ? .pink : .white)
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.1), radius: 3, x: 0, y: 2)
+            .animation(.spring(), value: isInWishlist)
+        }
+    }
+
+    // MARK: - Helper: Compact price summary
+
     private func compactPriceSummary(for card: Card) -> (market: String, low: String, high: String)? {
         guard let variants = card.variants, !variants.isEmpty else { return nil }
         let allMarkets = variants.compactMap { $0.market_price }

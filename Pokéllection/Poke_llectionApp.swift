@@ -28,6 +28,8 @@ struct Pokellection: App {
                         Label("Wishlist", systemImage: "heart.fill")
                     }
             }
+            .environmentObject(collectionVM)
+            .environmentObject(wishlistVM)
         }
     }
 }

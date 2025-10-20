@@ -15,10 +15,20 @@ struct CollectionView: View {
         NavigationStack {
             List {
                 ForEach(collectionVM.collection) { card in
-                    Text(card.name)
+                    NavigationLink(destination: CardDetailView(card: card)) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(card.name)
+                                .font(.headline)
+                            if let setName = card.set_name {
+                                Text(setName)
+                                    .font(.subheadline)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    }
                 }
                 .onDelete { indexSet in
-                    // Delete each selected card properly
                     indexSet.map { collectionVM.collection[$0] }
                         .forEach { card in
                             collectionVM.removeFromCollection(card)
