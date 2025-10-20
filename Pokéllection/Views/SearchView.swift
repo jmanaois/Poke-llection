@@ -8,6 +8,7 @@ struct SearchView: View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ZStack {
+                    // ✨ Gradient background
                     Theme.gradient.ignoresSafeArea()
 
                     VStack(spacing: 16) {
@@ -23,22 +24,27 @@ struct SearchView: View {
                             .padding(.horizontal)
                             .padding(.top, 8)
 
-                        // 🔍 Search field
-                        TextField("Search cards...", text: $viewModel.query)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .padding(.horizontal)
-                            .onSubmit {
-                                Task { await viewModel.searchCards() }
-                            }
+                        // 💎 Frosted glass panel for search + list
+                        VStack(spacing: 12) {
+                            // 🔍 Search bar
+                            TextField("Search cards...", text: $viewModel.query)
+                                .textFieldStyle(.roundedBorder)
+                                .padding(.horizontal)
+                                .padding(.top, 12)
+                                .onSubmit {
+                                    Task { await viewModel.searchCards() }
+                                }
 
-                        // 🔄 Loading state or results
-                        if viewModel.isLoading {
-                            ProgressView("Searching…")
-                                .padding()
-                        } else {
-                            if viewModel.results.isEmpty && !viewModel.query.isEmpty {
-                                ContentUnavailableView("No results found", systemImage: "magnifyingglass")
-                                    .padding(.top, 40)
+                            Divider().padding(.horizontal)
+
+                            // 📄 Results or placeholder
+                            if viewModel.isLoading {
+                                ProgressView("Searching…")
+                                    .padding()
+                            } else if viewModel.results.isEmpty && !viewModel.query.isEmpty {
+                                ContentUnavailableView("No results found",
+                                                       systemImage: "magnifyingglass")
+                                    .padding(.vertical, 40)
                             } else {
                                 List(viewModel.results) { card in
                                     NavigationLink(destination: CardDetailView(card: card)) {
@@ -57,12 +63,19 @@ struct SearchView: View {
                                 }
                                 .listStyle(.plain)
                                 .scrollContentBackground(.hidden)
+                                .frame(maxHeight: 500)
                             }
                         }
+                        .padding(.bottom, 12)
+                        .background(.ultraThinMaterial) // 🌫️ Frosted glass
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+                        .padding(.horizontal)
+                        .animation(.easeInOut(duration: 0.25), value: viewModel.results)
                     }
                     .padding(.bottom)
                 }
-                // 🧭 Reset behavior when tab re-tapped
+                // 🔁 Reset search when tab is re-tapped
                 .onChange(of: resetTrigger) {
                     withAnimation(.easeInOut) {
                         viewModel.query = ""
@@ -72,7 +85,5 @@ struct SearchView: View {
                 }
             }
         }
-        // 🚫 Remove navigation title to avoid duplication
-        // (We use our own gradient title above)
     }
 }
