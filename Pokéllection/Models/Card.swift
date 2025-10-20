@@ -11,9 +11,12 @@ import Foundation
 struct Variant: Codable, Identifiable, Hashable {
     let id: String
     let condition: String?
-    let market_price: Double?
-    let low_price: Double?
-    let high_price: Double?
+    let printing: String?
+    let language: String?
+    let price: Double?           // current price
+    let avgPrice: Double?
+    let minPrice7d: Double?
+    let maxPrice7d: Double?
 }
 
 struct Card: Codable, Identifiable, Hashable {

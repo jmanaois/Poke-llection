@@ -4,11 +4,11 @@ struct CardDetailView: View {
     let card: Card
     @EnvironmentObject var collectionViewModel: CollectionViewModel
     @EnvironmentObject var wishlistViewModel: WishlistViewModel
-
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
-                // 📝 Card name
+                // 📝 Card name and set
                 VStack(alignment: .leading, spacing: 8) {
                     Text(card.name)
                         .font(.title)
@@ -19,7 +19,7 @@ struct CardDetailView: View {
                     }
                 }
                 .padding(.horizontal)
-
+                
                 // 💰 Compact price summary
                 if let summary = compactPriceSummary(for: card) {
                     VStack(spacing: 4) {
@@ -39,7 +39,7 @@ struct CardDetailView: View {
                         .foregroundColor(.secondary)
                         .padding()
                 }
-
+                
                 // 🪙 Detailed variant list
                 if let variants = card.variants, !variants.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
@@ -50,15 +50,15 @@ struct CardDetailView: View {
                                 Text(variant.condition ?? "Unknown Condition")
                                     .font(.subheadline)
                                     .foregroundColor(.secondary)
-
+                                
                                 HStack(spacing: 8) {
-                                    if let market = variant.market_price {
+                                    if let market = variant.price ?? variant.avgPrice {
                                         Text("Market: \(market.asCurrency())")
                                     }
-                                    if let low = variant.low_price {
+                                    if let low = variant.minPrice7d {
                                         Text("Low: \(low.asCurrency())")
                                     }
-                                    if let high = variant.high_price {
+                                    if let high = variant.maxPrice7d {
                                         Text("High: \(high.asCurrency())")
                                     }
                                 }
@@ -72,7 +72,7 @@ struct CardDetailView: View {
                     .cornerRadius(12)
                     .padding(.horizontal)
                 }
-
+                
                 // 💾 Wishlist / Collection buttons
                 VStack(spacing: 12) {
                     collectionButton
@@ -86,12 +86,12 @@ struct CardDetailView: View {
         .navigationTitle(card.name)
         .navigationBarTitleDisplayMode(.inline)
     }
-
+    
     // MARK: - Adaptive Buttons
-
+    
     private var collectionButton: some View {
         let isInCollection = collectionViewModel.contains(card)
-
+        
         return Button {
             withAnimation(.spring()) {
                 if isInCollection {
@@ -115,10 +115,10 @@ struct CardDetailView: View {
             .animation(.spring(), value: isInCollection)
         }
     }
-
+    
     private var wishlistButton: some View {
         let isInWishlist = wishlistViewModel.contains(card)
-
+        
         return Button {
             withAnimation(.spring()) {
                 if isInWishlist {
@@ -142,19 +142,18 @@ struct CardDetailView: View {
             .animation(.spring(), value: isInWishlist)
         }
     }
-
-    // MARK: - Helper: Compact price summary
-
+    
     private func compactPriceSummary(for card: Card) -> (market: String, low: String, high: String)? {
         guard let variants = card.variants, !variants.isEmpty else { return nil }
-        let allMarkets = variants.compactMap { $0.market_price }
-        let allLows = variants.compactMap { $0.low_price }
-        let allHighs = variants.compactMap { $0.high_price }
-
-        guard let market = allMarkets.min(),
-              let low = allLows.min(),
-              let high = allHighs.max() else { return nil }
-
+        
+        let marketPrices = variants.compactMap { $0.price ?? $0.avgPrice }
+        let lowPrices    = variants.compactMap { $0.minPrice7d }
+        let highPrices   = variants.compactMap { $0.maxPrice7d }
+        
+        guard let market = marketPrices.first,
+              let low    = lowPrices.min(),
+              let high   = highPrices.max() else { return nil }
+        
         return (market.asCurrency(), low.asCurrency(), high.asCurrency())
     }
 }

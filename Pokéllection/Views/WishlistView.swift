@@ -1,40 +1,56 @@
-//
-//  WishlistView.swift
-//  Pokéllection
-//
-//  Created by Julian Manaois on 10/16/25.
-//
-
 import SwiftUI
 
 struct WishlistView: View {
     @EnvironmentObject var wishlistVM: WishlistViewModel
-    
+
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(wishlistVM.wishlist) { card in
-                    NavigationLink(destination: CardDetailView(card: card)) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(card.name)
-                                .font(.headline)
-                            if let setName = card.set_name {
-                                Text(setName)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+            ZStack {
+                Theme.gradient.ignoresSafeArea()
+
+                VStack(spacing: 12) {
+                    // Always show the title
+                    Text("Wishlist")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal)
+                        .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing))
+                        .padding(.top, 8)
+
+                    if wishlistVM.wishlist.isEmpty {
+                        Spacer()
+                        ContentUnavailableView(
+                            "No wishlist cards",
+                            systemImage: "heart",
+                            description: Text("Add cards you’re interested in collecting later.")
+                        )
+                        Spacer()
+                    } else {
+                        List {
+                            ForEach(wishlistVM.wishlist) { card in
+                                NavigationLink(destination: CardDetailView(card: card)) {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text(card.name)
+                                            .font(.headline)
+                                        if let set = card.set_name {
+                                            Text(set)
+                                                .font(.subheadline)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    .padding(.vertical, 4)
+                                }
+                            }
+                            .onDelete { indexSet in
+                                indexSet.map { wishlistVM.wishlist[$0] }
+                                    .forEach(wishlistVM.removeFromWishlist)
                             }
                         }
-                        .padding(.vertical, 4)
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                .onDelete { indexSet in
-                    indexSet.map { wishlistVM.wishlist[$0] }
-                        .forEach { card in
-                            wishlistVM.removeFromWishlist(card)
-                        }
-                }
             }
-            .navigationTitle("Wishlist")
         }
     }
 }

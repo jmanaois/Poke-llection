@@ -63,7 +63,7 @@ class SearchViewModel: ObservableObject {
                 print("🃏 \(card.name) - Variants: \(card.variants?.count ?? 0)")
                 if let variants = card.variants {
                     for variant in variants {
-                        print("   💰 \(variant.condition ?? "Unknown"): Market \(variant.market_price ?? -1)")
+                        print("   💰 \(variant.condition ?? "Unknown"): Market \(variant.price ?? -1)")
                     }
                 }
             }
