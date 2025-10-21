@@ -15,7 +15,7 @@ struct LaunchView: View {
                     .foregroundStyle(.white)
                     .symbolEffect(.bounce, options: .repeating, value: fadeOut)
 
-                Text("Pokéllection")
+                Text("pokéllection")
                     .font(.largeTitle.bold())
                     .foregroundStyle(.white)
                     .opacity(fadeOut ? 0 : 1)

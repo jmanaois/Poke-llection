@@ -8,48 +8,85 @@ struct WishlistView: View {
             ZStack {
                 Theme.gradient.ignoresSafeArea()
 
-                VStack(spacing: 12) {
-                    // Always show the title
-                    Text("Wishlist")
+                VStack(spacing: 16) {
+                    // 🌈 Gradient Title
+                    Text("wishlist")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundStyle(
+                            LinearGradient(colors: [.blue, .purple],
+                                           startPoint: .leading,
+                                           endPoint: .trailing)
+                        )
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal)
-                        .foregroundStyle(LinearGradient(colors: [.blue, .purple], startPoint: .leading, endPoint: .trailing))
                         .padding(.top, 8)
 
                     if wishlistVM.wishlist.isEmpty {
-                        Spacer()
-                        ContentUnavailableView(
-                            "No wishlist cards",
-                            systemImage: "heart",
-                            description: Text("Add cards you’re interested in collecting later.")
-                        )
-                        Spacer()
+                        ContentUnavailableView("your wishlist is empty",
+                                               systemImage: "heart.fill")
+                            .padding(.top, 60)
+                            .foregroundStyle(
+                                LinearGradient(colors: [.blue, .purple],
+                                               startPoint: .leading,
+                                               endPoint: .trailing)
+                            )
                     } else {
-                        List {
-                            ForEach(wishlistVM.wishlist) { card in
-                                NavigationLink(destination: CardDetailView(card: card)) {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(card.name)
-                                            .font(.headline)
-                                        if let set = card.set_name {
-                                            Text(set)
-                                                .font(.subheadline)
-                                                .foregroundColor(.secondary)
+                        ScrollView {
+                            let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
+                            LazyVGrid(columns: columns, spacing: 16) {
+                                ForEach(wishlistVM.wishlist) { card in
+                                    NavigationLink(destination: CardDetailView(card: card)) {
+                                        VStack(spacing: 8) {
+                                            // 🖼 Safe image loader
+                                            SafeAsyncImage(url: card.imageURL, cornerRadius: 12) {
+                                                ZStack {
+                                                    RoundedRectangle(cornerRadius: 12)
+                                                        .fill(Color.black.opacity(0.15))
+                                                    ProgressView()
+                                                }
+                                                .frame(height: 180)
+                                            }
+                                            .frame(height: 180)
+                                            .shadow(radius: 4)
+
+                                            // 🏷 Card Name
+                                            Text(card.name)
+                                                .font(.system(size: 13, weight: .semibold))
+                                                .foregroundColor(.primary)
+                                                .multilineTextAlignment(.center)
+                                                .lineLimit(2)
+                                                .frame(height: 34)
+
+                                            // 📦 Set Name
+                                            if let set = card.set_name {
+                                                Text(set)
+                                                    .font(.system(size: 11, weight: .medium))
+                                                    .foregroundColor(.secondary)
+                                                    .lineLimit(1)
+                                            }
                                         }
+                                        .padding(6)
+                                        .frame(maxWidth: .infinity)
+                                        .background(.ultraThinMaterial)
+                                        .cornerRadius(16)
+                                        .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
+                                        .scaleEffect(1.0)
+                                        .animation(.spring(response: 0.3, dampingFraction: 0.8),
+                                                   value: wishlistVM.wishlist)
                                     }
-                                    .padding(.vertical, 4)
+                                    .buttonStyle(.plain)
                                 }
                             }
-                            .onDelete { indexSet in
-                                indexSet.map { wishlistVM.wishlist[$0] }
-                                    .forEach(wishlistVM.removeFromWishlist)
-                            }
+                            .padding(.horizontal)
+                            .padding(.top, 10)
                         }
-                        .listStyle(.plain)
-                        .scrollContentBackground(.hidden)
+                        .background(.ultraThinMaterial)
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
+                        .padding(.horizontal)
                     }
                 }
+                .padding(.bottom)
             }
         }
     }

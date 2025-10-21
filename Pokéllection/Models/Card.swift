@@ -14,9 +14,9 @@ struct Variant: Codable, Identifiable, Hashable {
     let printing: String?
     let language: String?
     let price: Double?           // current price
-    let avgPrice: Double?
-    let minPrice7d: Double?
-    let maxPrice7d: Double?
+    let avgPrice90d: Double?
+    let minPrice90d: Double?
+    let maxPrice90d: Double?
 }
 
 struct Card: Codable, Identifiable, Hashable {
@@ -24,4 +24,10 @@ struct Card: Codable, Identifiable, Hashable {
     let name: String
     let set_name: String?
     let variants: [Variant]?
+    let tcgplayerId: String?
+    
+    var imageURL: URL? {
+        guard let tcgID = tcgplayerId, !tcgID.isEmpty else { return nil }
+        return URL(string: "https://tcgplayer-cdn.tcgplayer.com/product/\(tcgID)_in_1000x1000.jpg")
+    }
 }
