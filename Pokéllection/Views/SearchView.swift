@@ -5,10 +5,19 @@ struct SearchView: View {
     @EnvironmentObject var collectionVM: CollectionViewModel
     @EnvironmentObject var wishlistVM: WishlistViewModel
 
+    // ✅ Stable two-column layout (no UIScreen / GeometryReader)
+    private let columns: [GridItem] = [
+        GridItem(.flexible(minimum: 160), spacing: 14),
+        GridItem(.flexible(minimum: 160), spacing: 14)
+    ]
+
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.gradient.ignoresSafeArea()
+                // 🌈 Gradient background
+                Theme.gradient
+                    .ignoresSafeArea()
+                    .onTapGesture { hideKeyboard() }
 
                 VStack(spacing: 16) {
                     // 🌀 Title
@@ -23,6 +32,7 @@ struct SearchView: View {
                         .padding(.horizontal)
                         .padding(.top, 8)
 
+                    // 🔎 Query + Filter container
                     VStack(spacing: 14) {
                         // 🔍 Search field
                         TextField("search cards...", text: $viewModel.query)
@@ -36,6 +46,7 @@ struct SearchView: View {
                                         Button {
                                             viewModel.query = ""
                                             viewModel.results.removeAll()
+                                            hideKeyboard()
                                         } label: {
                                             Image(systemName: "xmark.circle.fill")
                                                 .foregroundColor(.secondary)
@@ -55,16 +66,12 @@ struct SearchView: View {
                                 Task { await viewModel.searchCardsAnimated() }
                             }
 
-                        // 🌐 Gradient-tinted Frosted Segmented Filter
+                        // 🌐 Language filter (frosted)
                         ZStack {
-                            // Gradient glow behind frosted blur
                             RoundedRectangle(cornerRadius: 14)
                                 .fill(
                                     LinearGradient(
-                                        colors: [
-                                            Color.blue.opacity(0.25),
-                                            Color.purple.opacity(0.25)
-                                        ],
+                                        colors: [Color.blue.opacity(0.25), Color.purple.opacity(0.25)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -75,7 +82,6 @@ struct SearchView: View {
                                 .fill(.ultraThinMaterial)
                                 .shadow(color: .black.opacity(0.15), radius: 3, x: 0, y: 1)
 
-                            // Custom gradient label overlay
                             HStack(spacing: 0) {
                                 ForEach(viewModel.availableLanguages, id: \.self) { lang in
                                     Text(lang)
@@ -97,6 +103,7 @@ struct SearchView: View {
                                             : Color.clear
                                         )
                                         .cornerRadius(8)
+                                        .contentShape(Rectangle())
                                         .onTapGesture {
                                             viewModel.selectedLanguage = lang
                                             Task { await viewModel.searchCards() }
@@ -109,48 +116,64 @@ struct SearchView: View {
                         .frame(height: 44)
                         .shadow(color: .purple.opacity(0.2), radius: 8, x: 0, y: 4)
                         .animation(.easeInOut(duration: 0.25), value: viewModel.selectedLanguage)
+
                         Divider().padding(.horizontal)
 
-                        // 🩵 Loading shimmer
-                        if viewModel.isLoading {
-                            ScrollView {
-                                LazyVStack(spacing: 12) {
-                                    ForEach(0..<6, id: \.self) { _ in
-                                        ShimmerCardPlaceholder()
-                                    }
-                                }
-                                .padding()
-                            }
-                        }
-
-                        // ❌ No results
-                        else if viewModel.results.isEmpty && !viewModel.query.isEmpty {
-                            ContentUnavailableView("no results found", systemImage: "magnifyingglass")
-                                .padding(.vertical, 40)
-                                .foregroundStyle(
-                                    LinearGradient(colors: [.blue, .purple],
-                                                   startPoint: .leading,
-                                                   endPoint: .trailing)
-                                )
-                        }
-
-                        // ✅ Grid of results
-                        else {
-                            ScrollView {
-                                let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
-
+                        // ✅ Results area
+                        ScrollView(.vertical, showsIndicators: true) {
+                            if viewModel.isLoading {
+                                // 🩵 Shimmer grid (non-overlapping, fixed height)
                                 LazyVGrid(columns: columns, spacing: 16) {
-                                    ForEach(viewModel.results) { card in
-                                        NavigationLink(destination: CardDetailView(card: card)) {
-                                            GridCardItem(card: card)
-                                        }
+                                    ForEach(0..<8, id: \.self) { _ in
+                                        ShimmerCardPlaceholder()
+                                            .frame(height: 220)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 12)
+                                                    .fill(
+                                                        LinearGradient(
+                                                            colors: [.blue.opacity(0.15), .purple.opacity(0.15)],
+                                                            startPoint: .topLeading,
+                                                            endPoint: .bottomTrailing
+                                                        )
+                                                    )
+                                            )
+                                            .cornerRadius(12)
+                                            .transition(.opacity)
                                     }
                                 }
                                 .padding(.horizontal)
                                 .padding(.top, 10)
-                                .animation(.easeInOut, value: viewModel.results.count)
+                            } else if viewModel.results.isEmpty && !viewModel.query.isEmpty {
+                                // ❌ Centered empty state
+                                VStack {
+                                    Spacer(minLength: 100)
+                                    ContentUnavailableView("no results found", systemImage: "magnifyingglass")
+                                        .foregroundStyle(
+                                            LinearGradient(colors: [.blue, .purple],
+                                                           startPoint: .leading,
+                                                           endPoint: .trailing)
+                                        )
+                                    Spacer()
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.horizontal)
+                            } else {
+                                // ✅ Two-column grid of results
+                                LazyVGrid(columns: columns, spacing: 16) {
+                                    ForEach(viewModel.results) { card in
+                                        NavigationLink(destination: CardDetailView(card: card)) {
+                                            GridCardItem(card: card)
+                                                .transition(.opacity.combined(with: .scale))
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal)
+                                .padding(.top, 10)
                             }
                         }
+                        .scrollContentBackground(.hidden)
+                        .modifier(KeyboardDismissOnScroll())
                     }
                     .padding(.vertical, 12)
                     .background(.ultraThinMaterial)
@@ -163,3 +186,39 @@ struct SearchView: View {
         }
     }
 }
+
+
+
+#if canImport(UIKit)
+extension View {
+    /// Hides the keyboard manually
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(
+            #selector(UIResponder.resignFirstResponder),
+            to: nil,
+            from: nil,
+            for: nil
+        )
+    }
+}
+
+/// 🧠 Modifier: auto-dismiss keyboard while scrolling (iOS 15+ support)
+struct KeyboardDismissOnScroll: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollDismissesKeyboard(.immediately)
+        } else {
+            content.gesture(
+                DragGesture().onChanged { _ in
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
+            )
+        }
+    }
+}
+#endif

@@ -10,12 +10,15 @@ struct CodableAppStorage<Value: Codable>: DynamicProperty {
 
     init(wrappedValue: Value, _ key: String, store: UserDefaults? = nil) {
         self.defaultValue = wrappedValue
-        _data = AppStorage(key, store: store)
+        // ✅ FIX: Provide a default Data value for the AppStorage property
+        _data = AppStorage(wrappedValue: Data(), key, store: store)
     }
 
     var wrappedValue: Value {
         get {
-            guard let decoded = try? decoder.decode(Value.self, from: data) else {
+            guard !data.isEmpty,
+                  let decoded = try? decoder.decode(Value.self, from: data)
+            else {
                 return defaultValue
             }
             return decoded

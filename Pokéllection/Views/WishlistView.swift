@@ -9,7 +9,7 @@ struct WishlistView: View {
                 Theme.gradient.ignoresSafeArea()
 
                 VStack(spacing: 16) {
-                    // 🌈 Gradient Title
+                    // 🌈 Title
                     Text("wishlist")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundStyle(
@@ -22,8 +22,7 @@ struct WishlistView: View {
                         .padding(.top, 8)
 
                     if wishlistVM.wishlist.isEmpty {
-                        ContentUnavailableView("your wishlist is empty",
-                                               systemImage: "heart.fill")
+                        ContentUnavailableView("your wishlist is empty", systemImage: "heart.fill")
                             .padding(.top, 60)
                             .foregroundStyle(
                                 LinearGradient(colors: [.blue, .purple],
@@ -31,13 +30,11 @@ struct WishlistView: View {
                                                endPoint: .trailing)
                             )
                     } else {
-                        ScrollView {
-                            let columns = [GridItem(.adaptive(minimum: 160), spacing: 12)]
-                            LazyVGrid(columns: columns, spacing: 16) {
+                        ScrollView(.vertical, showsIndicators: true) {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 12)], spacing: 16) {
                                 ForEach(wishlistVM.wishlist) { card in
                                     NavigationLink(destination: CardDetailView(card: card)) {
                                         VStack(spacing: 8) {
-                                            // 🖼 Safe image loader
                                             SafeAsyncImage(url: card.imageURL, cornerRadius: 12) {
                                                 ZStack {
                                                     RoundedRectangle(cornerRadius: 12)
@@ -49,7 +46,6 @@ struct WishlistView: View {
                                             .frame(height: 180)
                                             .shadow(radius: 4)
 
-                                            // 🏷 Card Name
                                             Text(card.name)
                                                 .font(.system(size: 13, weight: .semibold))
                                                 .foregroundColor(.primary)
@@ -57,7 +53,6 @@ struct WishlistView: View {
                                                 .lineLimit(2)
                                                 .frame(height: 34)
 
-                                            // 📦 Set Name
                                             if let set = card.set_name {
                                                 Text(set)
                                                     .font(.system(size: 11, weight: .medium))
@@ -70,23 +65,15 @@ struct WishlistView: View {
                                         .background(.ultraThinMaterial)
                                         .cornerRadius(16)
                                         .shadow(color: .black.opacity(0.15), radius: 6, x: 0, y: 3)
-                                        .scaleEffect(1.0)
-                                        .animation(.spring(response: 0.3, dampingFraction: 0.8),
-                                                   value: wishlistVM.wishlist)
                                     }
                                     .buttonStyle(.plain)
                                 }
                             }
-                            .padding(.horizontal)
-                            .padding(.top, 10)
+                            .padding()
                         }
-                        .background(.ultraThinMaterial)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
-                        .padding(.horizontal)
+                        .scrollContentBackground(.hidden)
                     }
                 }
-                .padding(.bottom)
             }
         }
     }

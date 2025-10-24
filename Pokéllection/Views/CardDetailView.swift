@@ -54,7 +54,7 @@ struct CardDetailView: View {
                     VStack(spacing: 6) {
                         Text(card.name)
                             .font(.system(size: 30, weight: .heavy, design: .rounded))
-                            .foregroundColor(textColor)
+                            .foregroundColor(Color.primary.opacity(ColorScheme.current == .dark ? 0.85 : 0.7))
                             .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
                             .shadow(color: .white.opacity(0.3), radius: 1, x: 0, y: -1)
                             .multilineTextAlignment(.center)
@@ -62,7 +62,7 @@ struct CardDetailView: View {
                         if let setName = card.set_name {
                             Text(setName)
                                 .font(.headline)
-                                .foregroundColor(textColor.opacity(0.8))
+                                .foregroundColor(Color.primary.opacity(ColorScheme.current == .dark ? 0.85 : 0.7))
                                 .multilineTextAlignment(.center)
                         }
                         
@@ -286,5 +286,11 @@ extension UIColor {
         // Perceived brightness formula
         let brightness = (r * 299 + g * 587 + b * 114) / 1000
         return brightness > 0.6
+    }
+}
+
+extension ColorScheme {
+    static var current: ColorScheme {
+        UITraitCollection.current.userInterfaceStyle == .dark ? .dark : .light
     }
 }

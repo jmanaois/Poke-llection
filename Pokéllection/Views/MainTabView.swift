@@ -17,14 +17,14 @@ struct MainTabView: View {
                 .environmentObject(wishlistVM)
                 .tag(0)
                 .tabItem {
-                    Label("Search", systemImage: "magnifyingglass")
+                    Label("search", systemImage: "magnifyingglass")
                 }
             // 📦 COLLECTION TAB
             CollectionView()
                 .environmentObject(collectionVM)
                 .tag(1)
                 .tabItem {
-                    Label("Collection", systemImage: "rectangle.stack.fill")
+                    Label("collection", systemImage: "rectangle.stack.fill")
                 }
 
             // 💖 WISHLIST TAB
@@ -32,7 +32,7 @@ struct MainTabView: View {
                 .environmentObject(wishlistVM)
                 .tag(2)
                 .tabItem {
-                    Label("Wishlist", systemImage: "heart.fill")
+                    Label("wishlist", systemImage: "heart.fill")
                 }
         }
         // ✅ Detect when user re-taps the same tab
